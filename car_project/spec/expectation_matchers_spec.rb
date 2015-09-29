@@ -33,4 +33,34 @@ describe 'Expectation matchers' do
 
   end
 
+  describe 'truthiness matchers' do
+
+    it 'will match true/false' do
+      expect(1 < 2).to be(true)
+      expect(1 > 2).to be(false)
+
+      expect('foo').not_to be(true)
+      expect(nil).not_to be(false)   # nil is "falsey", but not `false`.
+      expect(0).not_to be(false)     # 0 is not `false`, not even "falsey".
+    end
+
+    it 'will match truthy/falsey' do
+      expect(1 < 2).to be_truthy
+      expect(1 > 2).to be_falsey
+
+      expect('foo').to be_truthy  # Any object (except `nil`) is "truthy".
+      expect(nil).to be_falsey    # nil is "falsey".
+      expect(0).not_to be_falsey  # In Ruby, 0 is not "falsey".
+    end
+
+    it 'will match nil' do
+      expect(nil).to be_nil
+      expect(nil).to be nil
+
+      expect(false).not_to be_nil   # `nil` is "falsey", but not `false`.
+      expect(0).not_to be_nil       # 0 is not nil, nor falsey.
+    end
+
+  end
+
 end
