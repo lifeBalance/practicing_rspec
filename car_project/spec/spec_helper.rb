@@ -96,3 +96,33 @@ RSpec.configure do |config|
   Kernel.srand config.seed
 =end
 end
+
+APP_ROOT = File.expand_path('../..', __FILE__)
+# puts APP_ROOT
+
+
+# no_output do
+#   Some code here...
+# end
+def no_output(&block)
+  original_stdout = $stdout.dup
+  $stdout.reopen('/dev/null')
+  $stdout.sync = true
+  begin
+    yield
+  ensure
+    $stdout.reopen(original_stdout)
+  end
+end
+
+def capture_output(&block)
+  original_stdout = $stdout.dup
+  output_catcher = StringIO.new
+  $stdout = output_catcher
+  begin
+    yield
+  ensure
+    $stdout = original_stdout
+  end
+  output_catcher.string
+end
