@@ -166,4 +166,41 @@ describe 'Expectation matchers' do
 
   end
 
+  describe 'dynamic predicate matchers' do
+    it 'will match be_* to predicate methods ending in ?' do
+      expect([]).to be_empty    # [].empty?
+      expect(1).to be_integer   # 1.integer?
+      expect(0).to be_zero      # 0.zero?
+      expect(1).to be_nonzero  # 1.nonzero?
+      expect(1).to be_odd       # 1.odd?
+      expect(2).to be_even      # 2.even?
+      expect(nil).to be_nil     # nil.nil?
+
+      class Product
+        def visible?; true; end;
+      end
+      product = Product.new
+
+      expect(product).to be_visible
+      expect(product.visible?).to be true # Equivalent to line above
+    end
+
+    it 'will match have_* to predicate methods like has_*?' do
+      hash = { :a => 1, :b => 2 }
+      # Built-in methods
+      expect(hash).to have_key(:a)
+      expect(hash).to have_value(2)
+
+      # Custom methods
+      class Customer
+        def has_pending_order?; true; end;
+      end
+      customer = Customer.new
+
+      expect(customer).to have_pending_order
+      expect(customer.has_pending_order?).to be true   # Equivalent to above
+    end
+
+  end
+
 end
