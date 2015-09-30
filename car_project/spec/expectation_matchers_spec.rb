@@ -260,4 +260,42 @@ describe 'Expectation matchers' do
     end
   end
 
+  describe 'composing matchers' do
+    it 'will match all collection elements using a matcher' do
+      array = [1, 2, 3]
+      expect(array).to all(be < 5)
+    end
+
+    it 'will match by sending matchers as arguments to matchers' do
+      string = 'hello'
+      expect { string = 'goodbye' }.to change { string }.from(/ll/).to(/oo/)
+
+      hash = { :a => 1, :b => 2, :c => 3 }
+      expect(hash).to include(:a => be_odd, :b => be_even, :c => be_odd)
+      expect(hash).to include(:a => be > 0, :b => be_within(2).of(4))
+    end
+
+    it 'will match using noun-phrase aliases for matchers' do
+      fruits = ['apple', 'banana', 'cherry']
+      expect(fruits).to start_with(start_with('a')) &
+                        include(match(/a.a.a/)) &
+                        end_with(end_with('y'))
+
+      # We can write the expectation above using built-in aliases
+      # that allows to use noun-based phrases instead of verb-based phrases.
+      expect(fruits).to start_with(a_string_starting_with('a')) &
+                        include(a_string_matching(/a.a.a/)) &
+                        end_with(a_string_ending_with('y'))
+
+
+      # Another example:
+      array = [1, 2, 3]
+      # First the awkward version:
+      expect(array).to start_with(be <= 2) | end_with(be_within(1).of(5))
+      # We can write the expectation above using noun-based matchers:
+      #   `be <= 2` becomes: `a_value <= 2`
+      #   `be_within` becomes: `a_value_within`
+      expect(array).to start_with(a_value <= 2) | end_with(a_value_within(1).of(5))
+    end
+  end
 end
