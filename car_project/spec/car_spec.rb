@@ -1,6 +1,9 @@
 require 'car'
 
-describe "Car" do
+# describe "Car" do
+# Using a class name allows us to use implicit subjects, meaning that
+# we'll have available a barebones instance of `Car` under the name `subject`
+describe Car do
   describe "attributes" do
 
     # before(:example) do
@@ -12,7 +15,7 @@ describe "Car" do
     # let(:car) { Car.new }
 
     # Or we can use `subject`
-    subject { Car.new }
+    # subject { Car.new } # we don't need a explicit subject anymore
 
     it 'allows reading and writing for :make' do
       subject.make = 'Test'
