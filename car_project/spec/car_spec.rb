@@ -1,43 +1,9 @@
 require 'car'
+require 'shared_examples/a_standard_vehicle'
 
-# describe "Car" do
-# Using a class name allows us to use implicit subjects, meaning that
-# we'll have available a barebones instance of `Car` under the name `subject`
 describe Car do
-  describe "attributes" do
 
-    # before(:example) do
-    #   @car = Car.new
-    # end
-
-    # `let` is better than `before` for
-    # setting up instance variables
-    # let(:car) { Car.new }
-
-    # Or we can use `subject`
-    # subject { Car.new } # we don't need a explicit subject anymore
-
-    it 'allows reading and writing for :make' do
-      subject.make = 'Test'
-      expect(subject.make).to eq('Test')
-    end
-
-    it 'allows reading and writing for :year' do
-      subject.year = 9999
-      expect(subject.year).to eq(9999)
-    end
-
-    it 'allows reading and writing for :color' do
-      subject.color = 'foo'
-      expect(subject.color).to eq('foo')
-    end
-
-    it 'allows reading for :wheels' do
-      expect(subject.wheels).to eq(4)
-    end
-
-    it 'allows writing for :doors' # Pending
-  end
+  it_behaves_like('a standard vehicle')
 
   describe ".colors" do
     let(:colors) { ['red', 'green', 'blue', 'black'] }
@@ -59,4 +25,5 @@ describe Car do
       end
     end
   end
+
 end
