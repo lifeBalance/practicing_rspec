@@ -37,5 +37,73 @@ describe 'Doubles' do
     expect(die.roll).to eq(6)
     expect(die.roll).to eq(6) # continues returning last value
   end
-  
+
+  context 'with partial test doubles' do
+
+    it 'allows stubbing instance methods on Ruby classes' do
+      time = Time.new(2010, 1, 1, 12, 0, 0)
+      allow(time).to receive(:year).and_return(1975)
+
+      expect(time.to_s).to eq('2010-01-01 12:00:00 +0300')
+      expect(time.year).to eq(1975)
+    end
+
+    it 'allows stubbing instance methods on custom classes' do
+      class Superhero
+        attr_accessor :name
+      end
+
+      hero = Superhero.new
+      hero.name = 'Superman'
+      expect(hero.name).to eq('Superman')
+
+      allow(hero).to receive(:name).and_return('Clark Kent')
+      expect(hero.name).to eq('Clark Kent')
+    end
+
+    it 'allows stubbing class methods on Ruby classes' do
+      fixed = Time.new(2010, 1, 1, 12, 0, 0)
+      allow(Time).to receive(:now).and_return(fixed)
+
+      expect(Time.now).to eq(fixed)
+      expect(Time.now.to_s).to eq('2010-01-01 12:00:00 +0300')
+      expect(Time.now.year).to eq(2010)
+    end
+
+    it 'allows stubbing database calls a mock object' do
+      class Customer
+        attr_accessor :name
+        def self.find
+          # Looks up in the database and returns one object
+        end
+      end
+
+      dbl = double('Mock customer')
+      allow(dbl).to receive(:name).and_return('Bob')
+
+      allow(Customer).to receive(:find).and_return(dbl)
+
+      customer = Customer.find
+      expect(customer.name).to eq('Bob')
+    end
+
+    it 'allows stubbing database calls with many mock objects' do
+      class Customer
+        attr_accessor :name
+        def self.all
+          # Looks up in the database and returns one object
+        end
+      end
+
+      c1 = double('First customer', :name => 'Bob')
+      c2 = double('Second customer', :name => 'Mary')
+
+      allow(Customer).to receive(:all).and_return([c1, c2])
+
+      customers = Customer.all
+      expect(customers[1].name).to eq('Mary')
+    end
+
+  end
+
 end
