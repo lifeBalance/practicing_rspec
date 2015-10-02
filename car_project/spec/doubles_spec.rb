@@ -106,4 +106,179 @@ describe 'Doubles' do
 
   end
 
+  context 'with message expectations' do
+    it 'expects a call and allows a response' do
+      dbl = double('Chant')
+      expect(dbl).to receive(:hey!).and_return('Hoo!')
+      dbl.hey!
+    end
+
+    it 'does not matter which order' do
+      dbl = double('Multi-step process')
+
+      expect(dbl).to receive(:step_1)
+      expect(dbl).to receive(:step_2)
+
+      dbl.step_2
+      dbl.step_1
+    end
+
+    it 'works with #ordered when order matters' do
+      dbl = double('Multi-step process')
+
+      expect(dbl).to receive(:step_1).ordered
+      expect(dbl).to receive(:step_2).ordered
+
+      dbl.step_1
+      dbl.step_2
+    end
+
+  end
+
+  context 'with argument constraints' do
+
+    it 'expects arguments will match' do
+      dbl = double('Customer list')
+      expect(dbl).to receive(:sort).with('name')
+      dbl.sort('name')
+    end
+
+    it 'passes when any arguments are allowed' do
+      dbl = double('Customer list')
+      # The default, same as not using `with()` at all.
+      expect(dbl).to receive(:sort).with(any_args)
+      dbl.sort('name')
+    end
+
+    it 'works the same with multiple arguments' do
+      dbl = double('Customer list')
+      expect(dbl).to receive(:sort).with('name', 'asc', true)
+      dbl.sort('name', 'asc', true)
+    end
+
+    it 'allows constraining only some arguments' do
+      dbl = double('Customer list')
+      expect(dbl).to receive(:sort).with('name', anything, anything)
+      dbl.sort('name', 'asc', true)
+    end
+
+    it 'allows using other matchers' do
+      dbl = double('Customer list')
+      expect(dbl).to receive(:sort).with(
+        a_string_starting_with('n'),
+        an_object_eq_to('asc') | an_object_eq_to('desc'),
+        boolean
+      )
+      dbl.sort('name', 'asc', true)
+    end
+
+  end
+
+  context 'with message count constraints' do
+
+    it 'allows constraints on message count' do
+      class Cart
+        def initialize
+          @items = []
+        end
+
+        def add_item(id)
+          @items << id
+        end
+
+        def restock_item(id)
+          @items.delete(id)
+        end
+
+        def empty
+          @items.each { |id| restock_item(id) }
+        end
+      end
+
+      cart = Cart.new
+      cart.add_item(35)
+      cart.add_item(178)
+
+      expect(cart).to receive(:restock_item).twice
+      cart.empty
+    end
+
+    it 'allows using at_least/at_most' do
+      post = double('BlogPost')
+      expect(post).to receive(:like).at_least(3).times
+      post.like(:user => 'Bob')
+      post.like(:user => 'Mary')
+      post.like(:user => 'Ted')
+      post.like(:user => 'Jane')
+    end
+
+  end
+
+  context 'with spying abilities' do
+
+    it 'can expect a call after it is received' do
+      dbl = spy('Chant')
+      allow(dbl).to receive(:hey!).and_return('Hoo!')
+      dbl.hey!
+      expect(dbl).to have_received(:hey!)
+    end
+
+    it 'can use message constraints' do
+      dbl = spy('Chant')
+      allow(dbl).to receive(:hey!).and_return('Hoo!')
+      dbl.hey!
+      dbl.hey!
+      dbl.hey!
+      expect(dbl).to have_received(:hey!).with(no_args).exactly(3).times
+    end
+
+    it 'can expect any message already sent to a declared spy' do
+      customer = spy('Customer')
+      # No need to stub `send_invoice`
+      # allow(customer).to receive(:send_invoice)
+      customer.send_invoice
+      expect(customer).to have_received(:send_invoice)
+    end
+
+    it 'can expect only allowed messages on partial doubles' do
+      class Customer
+        def send_invoice
+          true
+        end
+      end
+      customer = Customer.new
+      # We need to stub a method. Can't spy on everything.
+      allow(customer).to receive(:send_invoice)
+      customer.send_invoice
+      expect(customer).to have_received(:send_invoice)
+    end
+
+  end
+
+  context 'using let and before hook' do
+    let(:order) do
+      spy('Order',  :process_line_items => nil,
+                    :charge_on_credit_card => true,
+                    :send_confirmation_email => true)
+    end
+
+    before(:example) do
+      order.process_line_items
+      order.charge_on_credit_card
+      order.send_confirmation_email
+    end
+
+    it 'calls #process_line_items on the order' do
+      expect(order).to have_received(:process_line_items)
+    end
+
+    it 'calls #charge_on_credit_card on the order' do
+      expect(order).to have_received(:charge_on_credit_card)
+    end
+
+    it 'calls #send_confirmation_email on the order' do
+      expect(order).to have_received(:send_confirmation_email)
+    end
+  end
+
 end
